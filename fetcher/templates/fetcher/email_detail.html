@@ -1,0 +1,26 @@
+{% extends "fetcher/base.html" %}
+{% block title %}{{ msg.subject }} — Gixvor Mail Fetcher{% endblock %}
+
+{% block content %}
+<section class="detail-page">
+  <a href="{% url 'fetcher:results' query.pk %}" class="back-link">&larr; Back to results</a>
+
+  <article class="detail-card">
+    <p class="eyebrow">{{ query.sender_email }}</p>
+    <h1>{{ msg.subject }}</h1>
+    <dl class="msg-headers msg-headers--detail">
+      <dt>From</dt><dd>{{ msg.from_address }}</dd>
+      <dt>To</dt><dd>{{ msg.to_address }}</dd>
+      <dt>Date</dt><dd>{{ msg.date_header|default:"Unknown" }}</dd>
+      {% if msg.attachment_list %}
+      <dt>Attachments</dt>
+      <dd>{% for name in msg.attachment_list %}<span class="attach-chip">{{ name }}</span>{% endfor %}</dd>
+      {% endif %}
+    </dl>
+    <hr class="detail-rule">
+    <div class="msg-body msg-body--detail">
+      {{ msg.body_text|default:"(No readable body content.)"|linebreaks }}
+    </div>
+  </article>
+</section>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "fetcher/base.html" %}
+{% block title %}Connect an inbox — Gixvor Mail Fetcher{% endblock %}
+
+{% block content %}
+<section class="connect-page">
+  <div class="connect-panel">
+    <p class="eyebrow">Step 1 of 1</p>
+    <h1>Connect &amp; search</h1>
+    <p class="panel-lede">
+      Credentials are sent straight to Gmail over IMAP and kept only in
+      your session &mdash; never saved to a database.
+    </p>
+
+    <form method="post" class="mail-form" novalidate id="connect-form">
+      {% csrf_token %}
+
+      {% for field in form %}
+      <div class="form-row {% if field.errors %}form-row--error{% endif %}">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}<p class="field-help">{{ field.help_text }}</p>{% endif %}
+        {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+      </div>
+      {% endfor %}
+
+      <button type="submit" class="btn btn--primary btn--lg btn--block" id="connect-submit">
+        <span class="btn-label">Fetch messages</span>
+        <span class="btn-spinner" aria-hidden="true"></span>
+      </button>
+    </form>
+  </div>
+
+  <aside class="connect-help">
+    <h2>Getting your App Password</h2>
+    <ol class="help-steps">
+      <li>Go to <strong>myaccount.google.com/security</strong> and turn on 2-Step Verification.</li>
+      <li>Visit <strong>myaccount.google.com/apppasswords</strong>.</li>
+      <li>Create a new App Password (name it "Gixvor Mail Fetcher") and copy the 16 characters.</li>
+      <li>Make sure IMAP is enabled under Gmail &rarr; Settings &rarr; Forwarding and POP/IMAP.</li>
+    </ol>
+    <div class="help-note">
+      <strong>Nothing is stored.</strong> Your App Password is used once to
+      open the IMAP connection and is kept only in this browser session.
+    </div>
+  </aside>
+</section>
+{% endblock %}

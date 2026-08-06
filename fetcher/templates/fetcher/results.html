@@ -1,0 +1,71 @@
+{% extends "fetcher/base.html" %}
+{% block title %}Results for {{ query.sender_email }} — Gixvor Mail Fetcher{% endblock %}
+
+{% block content %}
+<section class="results-header">
+  <div>
+    <p class="eyebrow">Mailbox &middot; {{ query.mailbox }}</p>
+    <h1>Mail from <span class="hero-underline">{{ query.sender_email }}</span></h1>
+    <p class="panel-lede">
+      {{ query.gmail_address }} &middot; {{ query.result_count }} message{{ query.result_count|pluralize }}
+      &middot; searched {{ query.created_at|date:"M j, Y \a\t g:i A" }}
+    </p>
+  </div>
+  <div class="results-actions">
+    {% if can_refresh %}
+    <form method="post" action="{% url 'fetcher:refresh' query.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn--ghost">&#8635; Refresh</button>
+    </form>
+    {% endif %}
+    <a href="{% url 'fetcher:connect' %}" class="btn btn--primary">New search</a>
+  </div>
+</section>
+
+{% if not query.succeeded %}
+<div class="empty-state empty-state--error">
+  <h2>Search failed</h2>
+  <p>{{ query.error_message }}</p>
+  <a href="{% url 'fetcher:connect' %}" class="btn btn--primary">Try again</a>
+</div>
+{% elif not emails %}
+<div class="empty-state">
+  <h2>No messages found</h2>
+  <p>Nothing from {{ query.sender_email }} turned up in {{ query.mailbox }}. Double check the address, or try a different mailbox/label.</p>
+  <a href="{% url 'fetcher:connect' %}" class="btn btn--primary">Search again</a>
+</div>
+{% else %}
+<section class="email-list">
+  {% for msg in emails %}
+  <article class="envelope-card">
+    <button class="envelope-summary" type="button" aria-expanded="false">
+      <span class="envelope-flap" aria-hidden="true"></span>
+      <span class="envelope-main">
+        <span class="envelope-subject">{{ msg.subject }}</span>
+        <span class="envelope-meta">
+          <span class="from">{{ msg.from_address }}</span>
+          {% if msg.received_at %}<span class="date">{{ msg.received_at|date:"M j, Y \a\t g:i A" }}</span>{% endif %}
+          {% if msg.has_attachments %}<span class="attach-pill">&#128206; {{ msg.attachment_list|length }}</span>{% endif %}
+        </span>
+        <span class="envelope-snippet">{{ msg.snippet }}</span>
+      </span>
+      <span class="envelope-chevron" aria-hidden="true">&#8964;</span>
+    </button>
+    <div class="envelope-body">
+      <dl class="msg-headers">
+        <dt>From</dt><dd>{{ msg.from_address }}</dd>
+        <dt>To</dt><dd>{{ msg.to_address }}</dd>
+        <dt>Date</dt><dd>{{ msg.date_header }}</dd>
+        {% if msg.attachment_list %}
+        <dt>Attachments</dt>
+        <dd>{% for name in msg.attachment_list %}<span class="attach-chip">{{ name }}</span>{% endfor %}</dd>
+        {% endif %}
+      </dl>
+      <div class="msg-body">{{ msg.body_text|default:"(No readable body content.)"|linebreaks }}</div>
+      <a class="detail-link" href="{% url 'fetcher:email_detail' query.pk msg.pk %}">Open full message &rarr;</a>
+    </div>
+  </article>
+  {% endfor %}
+</section>
+{% endif %}
+{% endblock %}

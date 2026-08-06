@@ -1,0 +1,33 @@
+{% extends "fetcher/base.html" %}
+{% block title %}History — Gixvor Mail Fetcher{% endblock %}
+
+{% block content %}
+<section class="results-header">
+  <div>
+    <p class="eyebrow">This browser session</p>
+    <h1>Search history</h1>
+  </div>
+  <a href="{% url 'fetcher:connect' %}" class="btn btn--primary">New search</a>
+</section>
+
+{% if not queries %}
+<div class="empty-state">
+  <h2>No searches yet</h2>
+  <p>Run your first search and it'll show up here.</p>
+  <a href="{% url 'fetcher:connect' %}" class="btn btn--primary">Connect an inbox</a>
+</div>
+{% else %}
+<section class="history-list">
+  {% for q in queries %}
+  <a class="history-row {% if not q.succeeded %}history-row--error{% endif %}" href="{% url 'fetcher:results' q.pk %}">
+    <span class="history-sender">{{ q.sender_email }}</span>
+    <span class="history-meta">
+      {{ q.gmail_address }} &middot; {{ q.mailbox }}
+      &middot; {% if q.succeeded %}{{ q.result_count }} message{{ q.result_count|pluralize }}{% else %}failed{% endif %}
+    </span>
+    <span class="history-date">{{ q.created_at|date:"M j, g:i A" }}</span>
+  </a>
+  {% endfor %}
+</section>
+{% endif %}
+{% endblock %}

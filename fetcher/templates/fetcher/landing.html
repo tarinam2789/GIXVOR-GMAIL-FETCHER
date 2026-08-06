@@ -1,0 +1,124 @@
+{% extends "fetcher/base.html" %}
+{% block title %}Gixvor Mail Fetcher — pull mail from one sender, instantly{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="hero-copy">
+    <p class="eyebrow">Python &middot; Django &middot; IMAP</p>
+    <h1>Fetch every email<br>from <span class="hero-underline">one sender</span>,<br>in seconds.</h1>
+    <p class="hero-lede">
+      Point Gixvor Mail Fetcher at any Gmail inbox with an App Password and it
+      will pull every message from a chosen address, parse the body, and lay
+      it out for you to read &mdash; no browser tab, no manual searching.
+    </p>
+    <div class="hero-actions">
+      <a href="{% url 'fetcher:connect' %}" class="btn btn--primary">Connect an inbox</a>
+      <a href="#how-it-works" class="btn btn--ghost">See how it works</a>
+    </div>
+    <div class="hero-stats">
+      <div><strong>{{ stats.queries }}</strong><span>searches run</span></div>
+      <div><strong>{{ stats.emails }}</strong><span>messages cached</span></div>
+    </div>
+  </div>
+
+  <div class="hero-art" aria-hidden="true">
+    <div class="postmark">
+      <svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="110" cy="110" r="98" fill="none" stroke="currentColor" stroke-width="3"/>
+        <circle cx="110" cy="110" r="84" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <path id="topArc" d="M 30 110 A 80 80 0 0 1 190 110" fill="none"/>
+        <path id="bottomArc" d="M 190 118 A 80 80 0 0 1 30 118" fill="none"/>
+        <text font-family="'Zilla Slab', serif" font-size="17" letter-spacing="4" fill="currentColor">
+          <textPath href="#topArc" startOffset="50%" text-anchor="middle">GIXVOR MAIL</textPath>
+        </text>
+        <text font-family="'IBM Plex Mono', monospace" font-size="13" letter-spacing="3" fill="currentColor">
+          <textPath href="#bottomArc" startOffset="50%" text-anchor="middle">FETCHED &middot; SORTED &middot; READ</textPath>
+        </text>
+        <text x="110" y="103" font-family="'Zilla Slab', serif" font-size="30" font-weight="700" text-anchor="middle" fill="currentColor">IMAP</text>
+        <text x="110" y="128" font-family="'IBM Plex Mono', monospace" font-size="12" text-anchor="middle" fill="currentColor">INBOX &rarr; PARSED</text>
+      </svg>
+    </div>
+    <div class="envelope-stack">
+      <div class="mini-envelope me-1"></div>
+      <div class="mini-envelope me-2"></div>
+      <div class="mini-envelope me-3"></div>
+    </div>
+  </div>
+</section>
+
+<section class="features">
+  <h2 class="section-title">What it does</h2>
+  <div class="feature-grid">
+    <article class="feature-card">
+      <span class="feature-icon" aria-hidden="true">&#9993;</span>
+      <h3>Sender-scoped search</h3>
+      <p>Hand it one address and it uses Gmail's IMAP <code>SEARCH FROM</code> to pull only the messages that matter, newest first.</p>
+    </article>
+    <article class="feature-card">
+      <span class="feature-icon" aria-hidden="true">&#128274;</span>
+      <h3>Password never stored</h3>
+      <p>Your App Password lives only in the server-side session for the length of your visit &mdash; it's never written to the database.</p>
+    </article>
+    <article class="feature-card">
+      <span class="feature-icon" aria-hidden="true">&#128203;</span>
+      <h3>Clean, readable results</h3>
+      <p>Subjects, senders, dates, and bodies are parsed out of raw MIME so you get an inbox view, not a wall of headers.</p>
+    </article>
+    <article class="feature-card">
+      <span class="feature-icon" aria-hidden="true">&#128260;</span>
+      <h3>Searchable history</h3>
+      <p>Every search is cached, so you can revisit results, or hit refresh to pull the latest without retyping anything.</p>
+    </article>
+  </div>
+</section>
+
+<section class="how-it-works" id="how-it-works">
+  <h2 class="section-title">How it works</h2>
+  <ol class="steps">
+    <li>
+      <span class="step-num">01</span>
+      <div>
+        <h3>Enable IMAP &amp; make an App Password</h3>
+        <p>Turn on IMAP access in Gmail settings, then generate a 16-character App Password (requires 2-Step Verification).</p>
+      </div>
+    </li>
+    <li>
+      <span class="step-num">02</span>
+      <div>
+        <h3>Connect &amp; tell it who to look for</h3>
+        <p>Enter your Gmail address, the App Password, and the sender you want every message from.</p>
+      </div>
+    </li>
+    <li>
+      <span class="step-num">03</span>
+      <div>
+        <h3>It logs in over IMAP</h3>
+        <p>Gixvor opens a secure IMAP_SSL connection, selects your mailbox, and runs a <code>FROM</code> search server-side on Gmail.</p>
+      </div>
+    </li>
+    <li>
+      <span class="step-num">04</span>
+      <div>
+        <h3>Messages are parsed &amp; laid out</h3>
+        <p>Each match is decoded from raw MIME &mdash; subject, sender, date, plain-text body, attachments &mdash; and shown as a card.</p>
+      </div>
+    </li>
+  </ol>
+</section>
+
+<section class="tech-stack">
+  <h2 class="section-title">Built with</h2>
+  <div class="badge-row">
+    <span class="badge">Python 3</span>
+    <span class="badge">Django</span>
+    <span class="badge">imaplib + email</span>
+    <span class="badge">SQLite</span>
+    <span class="badge">No JS framework</span>
+  </div>
+</section>
+
+<section class="cta-band">
+  <h2>Ready to pull an inbox apart?</h2>
+  <a href="{% url 'fetcher:connect' %}" class="btn btn--primary btn--lg">Connect your inbox</a>
+</section>
+{% endblock %}
