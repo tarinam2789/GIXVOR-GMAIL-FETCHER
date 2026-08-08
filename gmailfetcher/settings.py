@@ -1,12 +1,3 @@
-"""
-Django settings for the Gixvor Gmail Fetcher project.
-
-This project lets a logged-in operator securely connect to a Gmail
-inbox (via IMAP + an App Password) and pull every message that was
-sent by one particular sender, then browse the results in a clean
-dashboard.
-"""
-
 import os
 from pathlib import Path
 
@@ -22,14 +13,26 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ---------------------------------------------------------------------------
 # Core / security
 # ---------------------------------------------------------------------------
-SECRET_KEY = os.environ.get(
-    "DJANGO_SECRET_KEY",
-    "dev-only-insecure-secret-key-change-me-before-deploying",
-)
-
 DEBUG = os.environ.get("DJANGO_DEBUG", "True") == "True"
 
-ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "")
+if not SECRET_KEY:
+    if DEBUG:
+        # Fine for local development only.
+        SECRET_KEY = "dev-only-insecure-secret-key-change-me-before-deploying"
+    else:
+        raise RuntimeError(
+            "DJANGO_SECRET_KEY must be set in the environment when DEBUG=False."
+        )
+
+ALLOWED_HOSTS = [h.strip() for h in os.environ.get("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost").split(",") if h.strip()]
+
+# When deployed behind a platform's HTTPS proxy (Render, Railway, Heroku, etc.)
+CSRF_TRUSTED_ORIGINS = [o.strip() for o in os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",") if o.strip()]
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
 
 # ---------------------------------------------------------------------------
 # Applications
@@ -46,6 +49,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -109,15 +113,21 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "fetcher" / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# ---------------------------------------------------------------------------
-# Session behaviour
-# ---------------------------------------------------------------------------
-# Gmail App Passwords are only ever kept in the server-side session
-# (never written to the database) and only for the lifetime of the
-# browser session, so a stale tab can't be used to keep pulling mail.
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+    }
+}
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_COOKIE_AGE = 60 * 30  # 30 minutes
 
